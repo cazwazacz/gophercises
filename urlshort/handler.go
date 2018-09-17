@@ -1,6 +1,7 @@
 package urlshort
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"gopkg.in/yaml.v2"
@@ -50,6 +51,39 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	return MapHandler(pathMap, fallback), nil
 }
 
+// JSONHandler will parse the provided JSON and then return
+// an http.HandlerFunc (which also implements http.Handler)
+// that will attempt to map any paths to their corresponding
+// URL. If the path is not provided in the JSON, then the
+// fallback http.Handler will be called instead.
+//
+// JSON is expected to be in the format:
+//	[
+// 		{"path": "/json", "url": "https://gobyexample.com/json"},
+//		{"path": "/hello", "url": "https://gobyexample.com/byebye"},
+//	]
+func JSONHandler(json []byte, fallback http.Handler) (http.HandlerFunc, error) {
+	parsedJSON, err := parseJSON(json)
+	if err != nil {
+		return nil, err
+	}
+
+	pathMap := buildMap(parsedJSON)
+
+	return MapHandler(pathMap, fallback), nil
+}
+
+func parseJSON(jsonData []byte) ([]pathURL, error) {
+	var slice []pathURL
+
+	err := json.Unmarshal(jsonData, &slice)
+	if err != nil {
+		return nil, err
+	}
+
+	return slice, nil
+}
+
 func parseYAML(yml []byte) ([]pathURL, error) {
 	var slice []pathURL
 
@@ -72,6 +106,6 @@ func buildMap(parsedYml []pathURL) map[string]string {
 }
 
 type pathURL struct {
-	Path string `yaml:"path"`
-	URL  string `yaml:"url"`
+	Path string `yaml:"path" json:"path"`
+	URL  string `yaml:"url" json:"url"`
 }

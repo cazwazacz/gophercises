@@ -46,8 +46,12 @@ func main() {
 		panic(err)
 	}
 
+	json := []byte(`[{"path": "/json", "url": "https://gobyexample.com/json"}]`)
+
+	jsonHandler, err := urlshort.JSONHandler(json, yamlHandler)
+
 	fmt.Println("Starting the server on :8080")
-	http.ListenAndServe(":8080", yamlHandler)
+	http.ListenAndServe(":8080", jsonHandler)
 }
 
 func defaultMux() *http.ServeMux {
