@@ -3,11 +3,13 @@ package main
 import (
 	"bufio"
 	"encoding/csv"
+	"flag"
 	"fmt"
+	"gophercises/quiz/question"
 	"io"
 	"log"
 	"os"
-	"gophercises/quiz/question"
+	"time"
 )
 
 // ParseQuestions reads the csv file and returns a map of Questions
@@ -17,7 +19,7 @@ func ParseQuestions(filepath string) ([]question.Question, error) {
 		return nil, err
 	}
 
-	reader := csv.NewReader(bufio.NewReader(problems))
+	reader := csv.NewReader(problems)
 
 	var questions []question.Question
 	for {
@@ -42,23 +44,38 @@ func incrementScore(score *int) {
 }
 
 func main() {
+	filepath := flag.String("f", "problems.csv", "A filepath to your csv file with problems")
+	timeLimit := flag.Int("l", 30, "The time limit for the quiz in seconds")
+	flag.Parse()
+
 	score := 0
-	questions, err := ParseQuestions("problems.csv")
+	questions, err := ParseQuestions(*filepath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	reader := bufio.NewReader(os.Stdin)
 
-	var answer string
+	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
 
 	for _, question := range questions {
 		fmt.Println(question.Title)
 
-		answer, _ = reader.ReadString('\n')
+		answerCh := make(chan string)
+		go func() {
+			var answer string
+			answer, _ = reader.ReadString('\n')
+			answerCh <- answer
+		}()
 
-		if question.AnswerCorrect(answer) == true {
-			incrementScore(&score)
+		select {
+		case <-timer.C:
+			fmt.Println("Time's up!")
+			return
+		case answer := <-answerCh:
+			if question.AnswerCorrect(answer) {
+				incrementScore(&score)
+			}
 		}
 	}
 
