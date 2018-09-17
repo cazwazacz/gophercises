@@ -50,8 +50,8 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	return MapHandler(pathMap, fallback), nil
 }
 
-func parseYAML(yml []byte) ([]map[string]string, error) {
-	var slice []map[string]string
+func parseYAML(yml []byte) ([]pathURL, error) {
+	var slice []pathURL
 
 	err := yaml.Unmarshal(yml, &slice)
 	if err != nil {
@@ -61,12 +61,17 @@ func parseYAML(yml []byte) ([]map[string]string, error) {
 	return slice, nil
 }
 
-func buildMap(parsedYml []map[string]string) map[string]string {
+func buildMap(parsedYml []pathURL) map[string]string {
 	pathMap := make(map[string]string)
 
-	for index := range parsedYml {
-		pathMap[parsedYml[index]["path"]] = parsedYml[index]["url"]
+	for _, path := range parsedYml {
+		pathMap[path.Path] = path.URL
 	}
 
 	return pathMap
+}
+
+type pathURL struct {
+	Path string `yaml:"path"`
+	URL  string `yaml:"url"`
 }
