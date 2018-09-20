@@ -10,6 +10,7 @@ import (
 
 func main() {
 	yamlPath := flag.String("yaml", "", "Specify a yml file to load paths from")
+	jsonPath := flag.String("json", "", "Specify a json file to load paths from")
 	flag.Parse()
 
 	mux := defaultMux()
@@ -47,6 +48,13 @@ func main() {
 	}
 
 	json := []byte(`[{"path": "/json", "url": "https://gobyexample.com/json"}]`)
+	
+	if *jsonPath != "" {
+		json, err = ioutil.ReadFile(*jsonPath)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	jsonHandler, err := urlshort.JSONHandler(json, yamlHandler)
 
