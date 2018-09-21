@@ -4,7 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"gophercises/urlshort"
-	"io/ioutil"
+
+	"gophercises/urlshort/file"
 	"net/http"
 )
 
@@ -33,13 +34,11 @@ func main() {
 
 	yaml := []byte(yamlString)
 
-	if *yamlPath != "" {
-		yamlFile, err := ioutil.ReadFile(*yamlPath)
-		if err != nil {
-			panic(err)
-		}
+	var err error
 
-		yaml = yamlFile
+	err = file.Read(*yamlPath, &yaml)
+	if err != nil {
+		panic(err)
 	}
 
 	yamlHandler, err := urlshort.YAMLHandler(yaml, mapHandler)
@@ -48,12 +47,10 @@ func main() {
 	}
 
 	json := []byte(`[{"path": "/json", "url": "https://gobyexample.com/json"}]`)
-	
-	if *jsonPath != "" {
-		json, err = ioutil.ReadFile(*jsonPath)
-		if err != nil {
-			panic(err)
-		}
+
+	err = file.Read(*jsonPath, &json)
+	if err != nil {
+		panic(err)
 	}
 
 	jsonHandler, err := urlshort.JSONHandler(json, yamlHandler)

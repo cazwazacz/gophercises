@@ -60,7 +60,7 @@ func YAMLHandler(yml []byte, fallback http.Handler) (http.HandlerFunc, error) {
 // JSON is expected to be in the format:
 //	[
 // 		{"path": "/json", "url": "https://gobyexample.com/json"},
-//		{"path": "/hello", "url": "https://gobyexample.com/byebye"},
+//		{"path": "/hello", "url": "https://gobyexample.com/byebye"}
 //	]
 func JSONHandler(json []byte, fallback http.Handler) (http.HandlerFunc, error) {
 	parsedJSON, err := parseJSON(json)
